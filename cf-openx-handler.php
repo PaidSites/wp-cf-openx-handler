@@ -54,23 +54,25 @@ add_action('init','cfox_request_handler');
 
 function cfox_options_handler($cfox_submit) {
 	$zones = array();
+	
+	if (is_array($cfox_submit['zones']) && !empty($cfox_submit['zones'])) {
+		foreach($cfox_submit['zones'] as $key => $zoneinfo) {
+			$zoneid = '';
 
-	foreach($cfox_submit['zones'] as $key => $zoneinfo) {
-		$zoneid = '';
-		
-		if (!isset($zoneinfo['zoneID'])) {
-			$result = preg_match('/zoneid=([0-9]+)/',$zoneinfo['zoneIDurl'],$matches);
-			$zoneid = $matches[1];
-			if (empty($zoneid)) {
-				$result2 = preg_match('/([0-9]+)/',$zoneinfo['zoneIDurl'],$matches2);
-				$zoneid = $matches2[1];
+			if (!isset($zoneinfo['zoneID'])) {
+				$result = preg_match('/zoneid=([0-9]+)/',$zoneinfo['zoneIDurl'],$matches);
+				$zoneid = $matches[1];
+				if (empty($zoneid)) {
+					$result2 = preg_match('/([0-9]+)/',$zoneinfo['zoneIDurl'],$matches2);
+					$zoneid = $matches2[1];
+				}
 			}
-		}
-		else {
-			$zoneid = $zoneinfo['zoneID'];
-		}
-		if(!empty($zoneid)) {
-			$zones[$key] = array('id' => $zoneid, 'desc' => $zoneinfo['zoneDesc']);
+			else {
+				$zoneid = $zoneinfo['zoneID'];
+			}
+			if(!empty($zoneid)) {
+				$zones[$key] = array('id' => $zoneid, 'desc' => $zoneinfo['zoneDesc']);
+			}
 		}
 	}
 	$cfox_options = array('server' => str_replace(array('http://','https://'),'',$cfox_submit['server']), 'zones' => $zones);
