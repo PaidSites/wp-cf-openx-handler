@@ -460,6 +460,23 @@ function cfox_get_template($cfox_zoneID = 0,$before = '<div class="cfox_ad">',$a
 	return $before.cfox_get_js_code($cfox_zoneID).$after;
 }
 
+function cfox_get_zone_content($cfox_zoneID) {
+	if (empty($cfox_zoneID)) { return ''; }
+	
+	$cfox_options = get_option('cfox_options');
+	$random = md5(rand(0, 999999999));
+	$url = 'http://'.$cfox_options['server'].'/ajs.php?zoneid='.$cfox_zoneID.'&cb='.$random;
+	$remote = wp_remote_get($url);
+	
+	$content = $remote['body'];
+	
+	if (strpos($content, '+=') === false) {
+		return false;
+	}
+	
+	return '<script type="text/javascript">'.$content.'</script>';
+}
+
 /**
  * cfox_shortcode - Function that adds a shortcode so that the Invocation code can be built anywhere the "do_shortcode" function is called.
  * -- The invocation of the shortcode should look like [cfopenx zone="#"]
