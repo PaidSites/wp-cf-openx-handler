@@ -464,9 +464,18 @@ function cfox_get_zone_content($cfox_zoneID) {
 	if (empty($cfox_zoneID)) { return ''; }
 	
 	$cfox_options = get_option('cfox_options');
+	
+	if (!isset($cfox_options['server']) || empty($cfox_options['server'])) {
+		return false;
+	}
+	
 	$random = md5(rand(0, 999999999));
 	$url = 'http://'.$cfox_options['server'].'/ajs.php?zoneid='.$cfox_zoneID.'&cb='.$random;
 	$remote = wp_remote_get($url);
+	
+	if (!is_array($remote) || is_a($remote, 'WP_Error')) {
+		return false;
+	}
 	
 	$content = $remote['body'];
 	
