@@ -364,8 +364,8 @@ function cfox_widget_register() {
 	if ( !$options = get_option('cfox_widget') )
 		$options = array();
 
-	$widget_ops = array('classname' => 'cfox_widget', 'description' => __('Widget for serving data from the OpenX ad system'));
-	$name = __('OpenX Ad');
+	$widget_ops = array('classname' => 'cfox_widget', 'description' => __('Widget for serving data from the OpenX ad system. This widget loads data in the traditional OpenX way using JavaScript on page load.'));
+	$name = __('CF OpenX Ad');
 
 	$id = false;
 	foreach ( array_keys($options) as $o ) {
@@ -381,6 +381,131 @@ function cfox_widget_register() {
 	}
 }
 add_action( 'widgets_init', 'cfox_widget_register' );
+
+/*************PRELOAD CONTENT WIDGET**************/
+
+function cfox_preload_widget( $args, $widget_args = 1 ) {
+	extract( $args, EXTR_SKIP );
+	if ( is_numeric($widget_args) )
+		$widget_args = array( 'number' => $widget_args );
+	$widget_args = wp_parse_args( $widget_args, array( 'number' => -1 ) );
+	extract( $widget_args, EXTR_SKIP );
+
+	$options = get_option('cfox_preload_widget');
+	if ( !isset($options[$number]) )
+		return;
+	$title = $options[$number]['title'];
+	$zoneID = $options[$number]['zoneID'];
+	if($title == '') {
+		echo $before_widget;
+	}
+	else {
+		echo $before_widget . $before_title . $title . $after_title;
+	}
+	echo '<div class="cfox_preload_widget">';
+	cfox_get_zone_content($zoneID);
+	echo '</div>';
+	echo $after_widget;
+}
+
+function cfox_preload_widget_control( $widget_args = 1 ) {
+	global $wp_registered_widgets, $wpdb;
+	static $updated = false;
+
+	if ( is_numeric($widget_args) )
+		$widget_args = array( 'number' => $widget_args );
+	$widget_args = wp_parse_args( $widget_args, array( 'number' => -1 ) );
+	extract( $widget_args, EXTR_SKIP );
+
+	$options = get_option('cfox_preload_widget');
+	if ( !is_array($options) )
+		$options = array();
+
+	if ( !$updated && !empty($_POST['sidebar']) ) {
+		$sidebar = (string) $_POST['sidebar'];
+		$sidebars_widgets = wp_get_sidebars_widgets();
+		if ( isset($sidebars_widgets[$sidebar]) )
+			$this_sidebar =& $sidebars_widgets[$sidebar];
+		else
+			$this_sidebar = array();
+
+		foreach ( $this_sidebar as $_widget_id ) {
+			if ( 'cfox_preload' == $wp_registered_widgets[$_widget_id]['callback'] && isset($wp_registered_widgets[$_widget_id]['params'][0]['number']) ) {
+				$widget_number = $wp_registered_widgets[$_widget_id]['params'][0]['number'];
+				if ( !in_array( "cfox-preload-$widget_number", $_POST['widget-id'] ) )
+					unset($options[$widget_number]);
+			}
+		}
+		foreach ( (array) $_POST['cfox_preload'] as $widget_number => $cfox_instance ) {
+			if ( !isset($cfox_instance['title']) && isset($options[$widget_number]) )
+				continue;
+			$title = trim(strip_tags(stripslashes($cfox_instance['title'])));
+			$zoneID = $cfox_instance['zoneID'];
+			$options[$widget_number] = compact('title','zoneID');
+		}
+		update_option('cfox_preload_widget', $options);
+		$updated = true;
+	}
+	if ( -1 == $number ) { 
+		$title = '';
+		$zoneID = '';
+		$number = '%i%';
+	} else {
+		$title = attribute_escape($options[$number]['title']);
+		$zoneID = attribute_escape($options[$number]['zoneID']);
+	}
+	$cfox_options = maybe_unserialize(get_option('cfox_options'));
+?>
+		<p>
+			<label for="cfox-preload-title-<?php echo $number; ?>"><?php _e('Title: '); ?></label>
+			<br />
+			<input id="cfox-preload-title-<?php echo $number; ?>" name="cfox_preload[<?php echo $number; ?>][title]" class="widefat" type="text" value="<?php print(htmlspecialchars($title)); ?>" />
+		</p>
+		<p>
+			<label for="cfox-preload-zoneID-<?php echo $number; ?>"><?php _e('Zone: '); ?></label>
+			<br />
+			<select id="cfox-preload-zoneID-<?php echo $number; ?>" name="cfox_preload[<?php echo $number; ?>][zoneID]" class="widefat" style="max-width: 230px;">
+				<option value="0"><?php _e('Select Zone ID:'); ?></option>
+				<?php
+				foreach($cfox_options['zones'] as $key => $zoneinfo) {
+					if($zoneinfo['id'] == $zoneID) {
+						$selected = 'selected=selected';
+					}
+					else {
+						$selected = '';
+					}
+					?>
+					<option value="<?php print(attribute_escape($zoneinfo['id'])); ?>" <?php print($selected); ?>><?php print(attribute_escape($zoneinfo['id'] . ' - '.$zoneinfo['desc'])); ?></option>
+					<?php
+				}
+				?>
+			</select>
+		</p>
+		<input type="hidden" id="cfox-preload-submit-<?php echo $number; ?>" name="cfox_preload[<?php echo $number; ?>][submit]" value="1" />
+<?php
+}
+
+function cfox_preload_widget_register() {
+	if ( !$options = get_option('cfox_preload_widget') )
+		$options = array();
+
+	$widget_ops = array('classname' => 'cfox_preload_widget', 'description' => __('Widget for serving data from the OpenX ad system.  This widget loads OpenX Ads pre page load.'));
+	$name = __('CF OpenX Preload Ad');
+
+	$id = false;
+	foreach ( array_keys($options) as $o ) {
+		if ( !isset($options[$o]['title']) )
+			continue;
+		$id = "cfox-preload-$o";
+		wp_register_sidebar_widget( $id, $name, 'cfox_preload_widget', $widget_ops, array( 'number' => $o ) );
+		wp_register_widget_control( $id, $name, 'cfox_preload_widget_control', array( 'id_base' => 'cfox-preload' ), array( 'number' => $o ) );
+	}
+	if ( !$id ) {
+		wp_register_sidebar_widget( 'cfox-preload-1', $name, 'cfox_preload_widget', $widget_ops, array( 'number' => -1 ) );
+		wp_register_widget_control( 'cfox-preload-1', $name, 'cfox_preload_widget_control', array( 'id_base' => 'cfox-preload' ), array( 'number' => -1 ) );
+	}
+}
+add_action( 'widgets_init', 'cfox_preload_widget_register' );
 
 /*************************************************/
 /************CODE RETRIEVAL FUNCTIONS*************/
@@ -452,12 +577,20 @@ function cfox_js_code($cfox_zoneID = 0) {
 	echo cfox_get_js_code($cfox_zoneID);
 }
 
-function cfox_template($cfox_zoneID = 0,$before = '<div class="cfox_ad">',$after = '</div>') {
-	echo $before.cfox_get_js_code($cfox_zoneID).$after;
+function cfox_template($cfox_zoneID = 0,$before = '<div class="cfox_ad">',$after = '</div>', $preload = false) {
+	echo cfox_get_template($cfox_zoneID, $before, $after, $preload);
 }
 
-function cfox_get_template($cfox_zoneID = 0,$before = '<div class="cfox_ad">',$after = '</div>') {
-	return $before.cfox_get_js_code($cfox_zoneID).$after;
+function cfox_get_template($cfox_zoneID = 0,$before = '<div class="cfox_ad">',$after = '</div>', $preload = false) {
+	$content = '';
+	if ($preload) {
+		$content = cfox_get_zone_content($cfox_zoneID);
+	}
+	else {
+		$content = cfox_get_js_code($cfox_zoneID);
+	}
+
+	return $before.$content.$after;
 }
 
 function cfox_get_zone_content($cfox_zoneID) {
