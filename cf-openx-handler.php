@@ -336,7 +336,7 @@ class cfox_preload_widget extends WP_Widget {
 			echo $before_title.$title.$after_title;
 		}
 		echo '<div class="cfox_preload_widget">';
-		cfox_js_code($zone);
+		cfox_get_zone_content($zone);
 		echo '</div>';
 		echo $after_widget;
 	}
