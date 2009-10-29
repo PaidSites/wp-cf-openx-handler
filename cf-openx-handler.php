@@ -384,25 +384,12 @@ add_action( 'widgets_init', create_function( '', "register_widget('cfox_preload_
 /*************************************************/
 
 function cfox_get_js_code($cfox_zoneID = 0) {
-	global $cf_context;
+	$cf_context = apply_filters('cfox_context', $cf_context);
+	
 	$contexts = '';
 	if (is_array($cf_context) && !empty($cf_context)) { 
-		foreach ($cf_context as $key => $context) {
-			if (is_array($context) && !empty($context)) {
-				foreach ($context as $item) {
-					if (is_array($item)) {
-						if (isset($item['PubCode'])) {
-							if (class_exists('afps_response_codes')) {
-								$def = afps_response_codes::define('CircStatus','R',false);
-								$contexts .= "document.write('&amp;".$item['PubCode']."=".$def."');";
-							}
-						}
-					}
-					else {
-						$contexts .= "document.write('&amp;".$key."=".sanitize_title($item)."');";
-					}
-				}
-			}
+		foreach ($cf_context as $key => $value) {
+			$contexts .= '&amp;'.urlencode($key).'='.urlencode($value);
 		}
 	}
 	
@@ -482,14 +469,21 @@ function cfox_get_template($cfox_zoneID = 0,$before = '',$after = '', $preload =
 function cfox_get_zone_content($cfox_zoneID) {
 	if (empty($cfox_zoneID)) { return ''; }
 	
+	$cf_context = apply_filters('cfox_context', $cf_context);
+	
+	$contexts = '';
+	if (is_array($cf_context) && !empty($cf_context)) { 
+		foreach ($cf_context as $key => $value) {
+			$contexts .= '&'.urlencode($key).'='.urlencode($value);
+		}
+	}
 	$cfox_options = get_option('cfox_options');
 	
 	if (!isset($cfox_options['server']) || empty($cfox_options['server'])) {
 		return false;
 	}
-	
 	$random = md5(rand(0, 999999999));
-	$url = 'http://'.$cfox_options['server'].'/ajs.php?zoneid='.$cfox_zoneID.'&cb='.$random;
+	$url = 'http://'.$cfox_options['server'].'/ajs.php?zoneid='.$cfox_zoneID.'&cb='.$random.$contexts;
 	$remote = wp_remote_get($url);
 	
 	if (!is_array($remote) || is_a($remote, 'WP_Error')) {
