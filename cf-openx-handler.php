@@ -512,11 +512,9 @@ function cfox_shortcode($attrs, $content = null) {
 		// Check to make sure that the zone id is present
 		if (!empty($attrs['zone'])) {
 			if (empty($attrs['preload'])) {
-				echo 'not preload';
 				return cfox_get_js_code($attrs['zone']);
 			}
 			else {
-				echo 'preload';
 				return cfox_get_zone_content($attrs['zone']);
 			}
 		}
