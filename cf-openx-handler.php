@@ -1,9 +1,9 @@
 <?php
 /*
-Plugin Name: Crowd Favorite OpenX Handler
+Plugin Name: CF OpenX Handler
 Plugin URI: http://crowdfavorite.com
 Description: Plugin for getting OpenX ads in many areas using specific criteria
-Version: 1.0
+Version: 1.1
 Author: Crowd Favorite
 Author URI: http://crowdfavorite.com
 */
