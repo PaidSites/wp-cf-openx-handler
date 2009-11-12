@@ -384,12 +384,21 @@ add_action( 'widgets_init', create_function( '', "register_widget('cfox_preload_
 /*************************************************/
 
 function cfox_get_js_code($cfox_zoneID = 0) {
-	$cf_context = apply_filters('cfox_context', $cf_context);
-	
 	$contexts = '';
-	if (is_array($cf_context) && !empty($cf_context)) { 
-		foreach ($cf_context as $key => $value) {
-			$contexts .= '&amp;'.urlencode($key).'='.urlencode($value);
+	if (function_exists('cfcn_get_context')) {
+		$cf_context = cfcn_get_context();
+
+		if (is_array($cf_context) && !empty($cf_context)) { 
+			foreach ($cf_context as $key => $value) {
+				if (is_array($value) && !empty($value)) {
+					foreach ($value as $key2 => $item) {
+						$contexts .= '&amp;'.urlencode($key2).'='.urlencode($item);
+					}
+				}
+				else {
+					$contexts .= '&amp;'.urlencode($key).'='.urlencode($value);
+				}
+			}
 		}
 	}
 	
@@ -469,14 +478,30 @@ function cfox_get_template($cfox_zoneID = 0,$before = '',$after = '', $preload =
 function cfox_get_zone_content($cfox_zoneID) {
 	if (empty($cfox_zoneID)) { return ''; }
 	
-	$cf_context = apply_filters('cfox_context', $cf_context);
-	
 	$contexts = '';
-	if (is_array($cf_context) && !empty($cf_context)) { 
-		foreach ($cf_context as $key => $value) {
-			$contexts .= '&'.urlencode($key).'='.urlencode($value);
+	if (function_exists('cfcn_get_context')) {
+		$cf_context = cfcn_get_context();
+
+		if (is_array($cf_context) && !empty($cf_context)) { 
+			foreach ($cf_context as $key => $value) {
+				if (is_array($value) && !empty($value)) {
+					$contexts .= '&amp;'.urlencode($key).'=';
+					$i = 1;
+					foreach ($value as $key2 => $item) {
+						$contexts .= urlencode($item);
+						if ($i < count($value)) {
+							$contexts .= ',';
+						}
+						$i++;
+					}
+				}
+				else {
+					$contexts .= '&amp;'.urlencode($key).'='.urlencode($value);
+				}
+			}
 		}
 	}
+
 	$cfox_options = get_option('cfox_options');
 	
 	if (!isset($cfox_options['server']) || empty($cfox_options['server'])) {
