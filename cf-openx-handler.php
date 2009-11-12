@@ -485,7 +485,7 @@ function cfox_get_zone_content($cfox_zoneID) {
 		if (is_array($cf_context) && !empty($cf_context)) { 
 			foreach ($cf_context as $key => $value) {
 				if (is_array($value) && !empty($value)) {
-					$contexts .= '&amp;'.urlencode($key).'=';
+					$contexts .= '&'.urlencode($key).'=';
 					$i = 1;
 					foreach ($value as $key2 => $item) {
 						$contexts .= urlencode($item);
@@ -496,7 +496,7 @@ function cfox_get_zone_content($cfox_zoneID) {
 					}
 				}
 				else {
-					$contexts .= '&amp;'.urlencode($key).'='.urlencode($value);
+					$contexts .= '&'.urlencode($key).'='.urlencode($value);
 				}
 			}
 		}
