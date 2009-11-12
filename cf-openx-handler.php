@@ -179,6 +179,8 @@ function cfox_options_page() {
 			</form>				
 		</div>
 	');
+	$html = '';
+	echo apply_filters('cfox_admin_page', $html);
 }
 
 function cfox_admin_js() {
@@ -391,12 +393,18 @@ function cfox_get_js_code($cfox_zoneID = 0) {
 		if (is_array($cf_context) && !empty($cf_context)) { 
 			foreach ($cf_context as $key => $value) {
 				if (is_array($value) && !empty($value)) {
+					$contexts .= '&'.urlencode($key).'=';
+					$i = 1;
 					foreach ($value as $key2 => $item) {
-						$contexts .= '&amp;'.urlencode($key2).'='.urlencode($item);
+						$contexts .= urlencode($item);
+						if ($i < count($value)) {
+							$contexts .= ',';
+						}
+						$i++;
 					}
 				}
 				else {
-					$contexts .= '&amp;'.urlencode($key).'='.urlencode($value);
+					$contexts .= '&'.urlencode($key).'='.urlencode($value);
 				}
 			}
 		}
