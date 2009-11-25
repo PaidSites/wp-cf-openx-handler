@@ -765,59 +765,56 @@ if (function_exists('cflk_edit')) {
 			$count++;
 		}
 		
-		$html = cf_insert_content($html, $ads);
+		$html = cfox_insert_content($html, $ads);
 		return $html;
 	}
 	add_filter('cflk_get_links','cfox_links_filter',10,3);
 
-	if (!function_exists('cf_insert_content')) {
-		if (!is_admin()) {
-			include_once(CFOX_DIR.'includes/phpQuery-onefile.php');
+	if (!is_admin()) {
+		include_once(CFOX_DIR.'includes/phpQuery-onefile.php');
+	}
+
+	function cfox_insert_content($html,$inserts,$options = array()) {
+		if (!is_array($inserts) || empty($inserts)) { return $html; }
+
+		$defaults = array(
+			'parent_node' => 'ul',
+			'find_node' => 'li',
+			'before' => '<li>',
+			'after' => '</li>',
+			'add_class' => ''
+		);
+
+		$options = wp_parse_args($options, $defaults);
+		extract(stripslashes_deep($options), EXTR_SKIP);
+
+		if (function_exists('cf_sort_by_key')) { /* function from cf-compat */
+			$inserts = cf_sort_by_key($inserts,'position');
 		}
 
-		function cf_insert_content($html,$inserts,$options = array()) {
-			if (!is_array($inserts) || empty($inserts)) { return $html; }
-
-			$defaults = array(
-				'parent_node' => 'ul',
-				'find_node' => 'li',
-				'before' => '<li>',
-				'after' => '</li>',
-				'add_class' => ''
-			);
-
-			$options = wp_parse_args($options, $defaults);
-			extract(stripslashes_deep($options), EXTR_SKIP);
-
-			if (function_exists('cf_sort_by_key')) { /* function from cf-compat */
-				$inserts = cf_sort_by_key($inserts,'position');
+		$h = phpQuery::newDocumentHTML($html);
+		$h[$parent_node]->addClass('cf-has-inserted-items');
+		foreach($inserts as $insert) {
+			if (empty($insert['callback'])) { continue; }
+			if (empty($insert['params'])) { $insert['params'] = array(); }
+			if (empty($insert['add_class'])) { $insert['add_class'] = ''; }
+			$content = call_user_func_array($insert['callback'], $insert['params']);
+			$empty_class = '';
+			if (!$content) {
+				$empty_class .= ' cf-empty-node';
+				$content = '';
 			}
-
-			$h = phpQuery::newDocumentHTML($html);
-			$h[$parent_node]->addClass('cf-has-inserted-items');
-			foreach($inserts as $insert) {
-				if (empty($insert['callback'])) { continue; }
-				if (empty($insert['params'])) { $insert['params'] = array(); }
-				if (empty($insert['add_class'])) { $insert['add_class'] = ''; }
-				$content = call_user_func_array($insert['callback'], $insert['params']);
-				$empty_class = '';
-				if (!$content) {
-					$empty_class .= ' cf-empty-node';
-					$content = '';
-				}
-				$html = $before.$content.$after;
-				if(!empty($h[$parent_node.' '.$find_node.':nth-child('.$insert['position'].')'])) {
-					pq($html)->addClass('cf-inserted-item'.$empty_class.$add_class.$insert['add_class'])->insertBefore($h[$parent_node.' '.$find_node.':nth-child('.$insert['position'].')']);
-				}
-				else {
-					pq($html)->addClass('cf-inserted-item'.$empty_class.$add_class.$insert['add_class'])->appendTo($h[$parent_node]);
-				}
+			$html = $before.$content.$after;
+			if(!empty($h[$parent_node.' '.$find_node.':nth-child('.$insert['position'].')'])) {
+				pq($html)->addClass('cf-inserted-item'.$empty_class.$add_class.$insert['add_class'])->insertBefore($h[$parent_node.' '.$find_node.':nth-child('.$insert['position'].')']);
 			}
+			else {
+				pq($html)->addClass('cf-inserted-item'.$empty_class.$add_class.$insert['add_class'])->appendTo($h[$parent_node]);
+			}
+		}
 
-			return $h;
-		}		
-	}
-	
+		return $h;
+	}		
 }
 
 
