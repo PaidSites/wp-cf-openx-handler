@@ -3,13 +3,20 @@
 Plugin Name: CF OpenX Handler
 Plugin URI: http://crowdfavorite.com
 Description: Plugin for getting OpenX ads in many areas using specific criteria
-Version: 1.1
+Version: 1.2
 Author: Crowd Favorite
 Author URI: http://crowdfavorite.com
 */
 
 // ini_set('display_errors', '1');
 // ini_set('error_reporting', E_ALL);
+
+load_plugin_textdomain('cfox');
+
+// Constants
+	define('CFOX_VERSION', '1.2');
+	define('CFOX_DIR',trailingslashit(realpath(dirname(__FILE__))));
+
 
 /*************************************************/
 /****************WP-ADMIN FUNCTIONS***************/
@@ -18,8 +25,8 @@ Author URI: http://crowdfavorite.com
 function cfox_menu_items() {
 	if(current_user_can('manage_options')) {
 		add_options_page(
-			__('CF OpenX Handler')
-			, __('CF OpenX Handler')
+			__('CF OpenX Handler', 'cfox')
+			, __('CF OpenX Handler', 'cfox')
 			, 10
 			, basename(__FILE__)
 			, 'cfox_options_page'
@@ -91,7 +98,7 @@ function cfox_options_page() {
 			case 'updated':
 				print('
 					<div id="cfox_updated" class="updated fade">
-						<p>'.__('Settings Updated.').'</p>
+						<p>'.__('Settings Updated.', 'cfox').'</p>
 					</div>
 				');
 				break;
@@ -100,8 +107,8 @@ function cfox_options_page() {
 	screen_icon();
 	print('
 		<div class="wrap">
-			<h2>'.__('Crowd Favorite OpenX Handler Options').'</h2>
-			<h3>'.__('Type the path to the adserver delivery directory into the text field.').'</h3>
+			<h2>'.__('Crowd Favorite OpenX Handler Options', 'cfox').'</h2>
+			<h3>'.__('Type the path to the adserver delivery directory into the text field.', 'cfox').'</h3>
 			<p>
 				'.__('Example: ').'<code>openx.example.com/www/delivery</code>
 			</p>
@@ -109,31 +116,31 @@ function cfox_options_page() {
 				<table class="widefat">
 					<thead>
 						<tr>
-							<th scope="col">'.__('Option Name').'</th>
-							<th scope="col">'.__('Option Value').'</th>
+							<th scope="col">'.__('Option Name', 'cfox').'</th>
+							<th scope="col">'.__('Option Value', 'cfox').'</th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr>
 							<td style="vertical-align: middle; font-weight: bold;">
-								'.__('Server URL:').'
+								'.__('Server URL:', 'cfox').'
 							</td>
 							<td>
 								<input type="text" name="cfox_options[server]" id="cfox_server" size="50" value="'.attribute_escape($cfox_options['server']).'" />
 								<br />
-								'.__('Omit http:// and https://').'
+								'.__('Omit http:// and https://', 'cfox').'
 							</td>
 						</tr>
 					</tbody>
 				</table>
 				<br /><br />
-				<h3>'.__('The zones added below will be available for use on this blog.  No other zones will be acknowledged.').'</h3>
+				<h3>'.__('The zones added below will be available for use on this blog.  No other zones will be acknowledged.', 'cfox').'</h3>
 				<div id="cfox_zone_head">
 					<table class="widefat">
 						<thead>
 							<tr>
-								<th scope="col" width="320">'.__('Zone ID').'</th>
-								<th scope="col">'.__('Zone Description').'</th>
+								<th scope="col" width="320">'.__('Zone ID', 'cfox').'</th>
+								<th scope="col">'.__('Zone Description', 'cfox').'</th>
 							</tr>
 						</thead>
 					</table>');
@@ -150,7 +157,7 @@ function cfox_options_page() {
 											<input type="text" name="cfox_options[zones]['.attribute_escape($key).'][zoneDesc]" id="cfox_zone_'.attribute_escape($key).'_zoneDesc" size="50" value="'.attribute_escape($zoneinfo['desc']).'" />
 										</td>
 										<td width="60px" style="text-align: center;">
-											<input type="button" class="cfox_button" id="cfox_delete_'.attribute_escape($key).'" value="'.__('Delete').'" onClick="deleteZone('.attribute_escape($key).')" />
+											<input type="button" class="cfox_button" id="cfox_delete_'.attribute_escape($key).'" value="'.__('Delete', 'cfox').'" onClick="deleteZone('.attribute_escape($key).')" />
 										</td>
 									</tr>
 								</tbody>
@@ -165,7 +172,7 @@ function cfox_options_page() {
 							<tr>
 								<td>
 									<p class="submit" style="border-top: none; padding:0; margin:0;">
-										<input type="button" name="zone_add" id="zone_add" value="'.__('Add New Zone').'" onClick="addZone()" />
+										<input type="button" name="zone_add" id="zone_add" value="'.__('Add New Zone', 'cfox').'" onClick="addZone()" />
 									</p>
 								</td>
 							</tr>
@@ -174,7 +181,7 @@ function cfox_options_page() {
 				</div>
 				<p class="submit" style="border-top: none;">
 					<input type="hidden" name="cf_action" value="cfox_save_settings" />
-					<input type="submit" name="submit" id="cfox_submit" value="'.__('Save OpenX Server Settings').'" />
+					<input type="submit" name="submit" id="cfox_submit" value="'.__('Save OpenX Server Settings', 'cfox').'" />
 				</p>
 			</form>				
 		</div>
@@ -255,6 +262,18 @@ function cfox_admin_head() {
 }
 if(isset($_GET['page']) && $_GET['page'] == basename(__FILE__)) {
 	add_action('admin_head', 'cfox_admin_head');
+}
+
+function cfox_get_zones() {
+	$options = maybe_unserialize(get_option('cfox_options'));
+	$zones = array();
+	
+	if (is_array($options['zones']) && !empty($options['zones'])) {
+		foreach ($options['zones'] as $key => $zone) {
+			$zones[$key] = $zone;
+		}
+	}
+	return $zones;
 }
 
 /*************************************************/
@@ -555,6 +574,251 @@ function cfox_shortcode($attrs, $content = null) {
 	return $content;
 }
 add_shortcode('cfopenx', 'cfox_shortcode');
+
+
+
+/*************CF LINKS AUTO INSERT FUNCTIONALITY*************/
+
+
+// Add the functionality only if the CF Links plugin exists and is active
+if (function_exists('cflk_edit')) {
+	
+	function cfox_link_edit($html, $cflk_key) {
+		// Get the zones, then build the Select options with the info
+		$zones = cfox_get_zones();
+		if (is_array($zones) && !empty($zones)) {
+			foreach ($zones as $key => $zone) {
+				$zone_options .= '<option value="'.$key.'">'.$zone['id'].' - '.$zone['desc'].'</option>';
+			}
+
+			// Get the inserted zones, and build the TRs for them
+			$options = get_option('cfox_link');
+			if (is_array($options[$cflk_key]) && !empty($options[$cflk_key])) {
+				foreach ($options[$cflk_key] as $key => $zone) {
+					$zone_info .= '
+						<tr id="cfox-zone-'.$key.'">
+							<td>
+								Zone '.$zones[$zone]['id'].': '.$zones[$zone]['desc'].'
+							</td>
+							<td style="text-align:center;">
+								<input type="button" class="button cfox_delete" id="cfox_delete_'.$key.'" value="'.__('Delete', 'cfox').'" onClick="cfox_link_delete('.$key.');" />
+								<input type="hidden" name="cfox['.$key.'][zone]" value="'.$zone.'" />
+							</td>
+						</tr>
+					';
+				}
+			}
+		}
+		
+		if ( isset($_GET['cfox_message']) && $_GET['cfox_message'] = 'updated' ) {
+			$html .= '
+				<div id="message" class="updated fade">
+					<p>'.__('OpenX Links Settings Updated.', 'cfox').'</p>
+				</div>
+			';
+		}
+		
+		$html .= '
+		<div class="wrap">
+			<h3>CF OpenX Link Insertion</h3>
+			<p>
+				The CF OpenX Handler plugin will insert ads from the list of Zones below at random into the list of links above.  <em>This list only applies to this links list.</em>
+				<br />
+				<strong>NOTE: The Update Settings button above does not update the Zone Settings.</strong>
+			</p>
+			<form action="" method="post" id="cfox-form">
+				<table id="cfox" class="widefat" style="width:500px;">
+					<thead>
+						<tr>
+							<th scope="col" width="440px">'.__('Zone', 'cfox').'</th>
+							<th scope="col" width="60px" style="text-align:center;">'.__('Remove', 'cfox').'</th>
+						</tr>
+					</thead>
+					<tfoot>
+						<tr>
+							<td style="text-align:left;" colspan="2">
+								<input type="button" class="button" name="cfox_add" id="cfox_add" value="'.__('Add New Zone', 'cfox').'" />
+							</td>
+						</tr>
+					</tfoot>
+					<tbody>
+						'.$zone_info.'
+					</tbody>
+				</table>
+				<p class="submit" style="border-top: none;">
+					<input type="hidden" name="cf_action" value="cfox_links_settings_update" />
+					<input type="hidden" name="cflk_key" value="'.attribute_escape($cflk_key).'" />
+					<input type="submit" name="submit" id="cfox-submit" value="'.__('Update Zone Settings', 'cfox').'" class="button-primary" />
+				</p>
+			</form>
+			<div id="cfox_newitem" style="display:none;">
+				<table class="widefat">
+					<tr id="cfox-zone-###SECTION###">
+						<td>
+							<select id="cfox_zone_###SECTION###" class="cfox_zones" name="cfox[###SECTION###][zone]">
+								<option value="0">--Select Zone--</option>
+								'.$zone_options.'
+							</select>
+						</td>
+						<td style="text-align:center;">
+							<input type="button" class="button cfox_delete" id="cfox_delete_###SECTION###" value="'.__('Delete', 'cfox').'" onClick="cfox_link_delete(###SECTION###);" />
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		';
+
+		return $html;
+	}
+	add_filter('cflk_edit', 'cfox_link_edit', 10, 2);
+	
+	function cfox_link_js($js) {
+		$js .= "
+		jQuery(document).ready(function() {
+			jQuery('#cfox_add').click(function() {
+				var id = new Date().valueOf();
+				var section = id.toString();
+
+				var html = jQuery('#cfox_newitem table').html().replace('<tbody>', '').replace('</tbody>', '').replace(/###SECTION###/g, section);
+				jQuery('#cfox tbody').append(html);
+			});
+		});
+		
+		function cfox_link_delete(key) {
+			if (confirm('Are you sure you want to delete this?')) {
+				jQuery('#cfox-zone-'+key).remove();
+				return false;
+			}
+		}
+		";
+		return $js;
+	}
+	add_filter('cflk_admin_js', 'cfox_link_js');
+	
+	function cfox_link_css($css) {
+		$css .= "
+		.cfox_zones {
+			max-width:400px;
+			width: expression(this.clientWidth > 400 ? '400px':this.clientWidth+'px');
+		}
+		";
+		return $css;
+	}
+	add_filter('cflk_admin_css', 'cfox_link_css');
+	
+	function cfox_link_request_handler() {
+		if(current_user_can('manage_options')) {
+			$blogurl = '';
+			if (is_ssl()) {
+				$blogurl = str_replace('http://','https://',get_bloginfo('wpurl'));
+			}
+			else {
+				$blogurl = get_bloginfo('wpurl');
+			}		
+			
+			if(isset($_POST['cf_action'])) {
+				switch($_POST['cf_action']) {
+					case 'cfox_links_settings_update':
+						cfox_links_options_handler($_POST['cfox'], $_POST['cflk_key']);
+						wp_redirect($blogurl.'/wp-admin/options-general.php?page=cf-links.php&cflk_page=edit&link='.$_POST['cflk_key'].'&cfox_message=updated');
+						die();
+				}
+			}
+		}
+	}
+	add_action('init', 'cfox_link_request_handler');
+	
+	function cfox_links_options_handler($posted, $cflk_key) {
+		$options = get_option('cfox_link');
+		
+		unset($options[$cflk_key]);
+		$options[$cflk_key] = array();
+		
+		if (is_array($posted) && !empty($posted)) {
+			foreach ($posted as $key => $zone) {
+				$options[$cflk_key][] = $zone['zone'];
+			}
+		}
+		
+		delete_option('cfox_link');
+		add_option('cfox_link', $options, '', 'no');
+	}
+	
+	function cfox_links_filter($html, $links, $args) {
+		$options = get_option('cfox_link');
+		$key = $links['key'];
+		if (!is_array($options[$key]) || empty($options[$key])) { return $html; }
+
+		$zones = cfox_get_zones();
+		$ads = array();
+		$count = 1;
+		foreach ($options[$key] as $key => $zone) {
+			$ads[] = array(
+				'position' => rand(1,count($links['data'])+1),
+				'params' => array(
+					'zone_id' => $zones[$zone]['id']
+				),
+				'callback' => 'cfox_get_zone_content',
+				'add_class' => ' cf-ad-'.$count
+			);
+			$count++;
+		}
+		
+		$html = cf_insert_content($html, $ads);
+		return $html;
+	}
+	add_filter('cflk_get_links','cfox_links_filter',10,3);
+
+	if (!function_exists('cf_insert_content')) {
+		if (!is_admin()) {
+			include_once(CFOX_DIR.'includes/phpQuery-onefile.php');
+		}
+
+		function cf_insert_content($html,$inserts,$options = array()) {
+			if (!is_array($inserts) || empty($inserts)) { return $html; }
+
+			$defaults = array(
+				'parent_node' => 'ul',
+				'find_node' => 'li',
+				'before' => '<li>',
+				'after' => '</li>',
+				'add_class' => ''
+			);
+
+			$options = wp_parse_args($options, $defaults);
+			extract(stripslashes_deep($options), EXTR_SKIP);
+
+			if (function_exists('cf_sort_by_key')) { /* function from cf-compat */
+				$inserts = cf_sort_by_key($inserts,'position');
+			}
+
+			$h = phpQuery::newDocumentHTML($html);
+			$h[$parent_node]->addClass('cf-has-inserted-items');
+			foreach($inserts as $insert) {
+				if (empty($insert['callback'])) { continue; }
+				if (empty($insert['params'])) { $insert['params'] = array(); }
+				if (empty($insert['add_class'])) { $insert['add_class'] = ''; }
+				$content = call_user_func_array($insert['callback'], $insert['params']);
+				$empty_class = '';
+				if (!$content) {
+					$empty_class .= ' cf-empty-node';
+					$content = '';
+				}
+				$html = $before.$content.$after;
+				if(!empty($h[$parent_node.' '.$find_node.':nth-child('.$insert['position'].')'])) {
+					pq($html)->addClass('cf-inserted-item'.$empty_class.$add_class.$insert['add_class'])->insertBefore($h[$parent_node.' '.$find_node.':nth-child('.$insert['position'].')']);
+				}
+				else {
+					pq($html)->addClass('cf-inserted-item'.$empty_class.$add_class.$insert['add_class'])->appendTo($h[$parent_node]);
+				}
+			}
+
+			return $h;
+		}		
+	}
+	
+}
 
 
 // Deprecated Widget Functionality for Pre WP 2.7
