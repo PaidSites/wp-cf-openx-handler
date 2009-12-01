@@ -737,7 +737,9 @@ if (function_exists('cflk_edit')) {
 		
 		if (is_array($posted) && !empty($posted)) {
 			foreach ($posted as $key => $zone) {
-				$options[$cflk_key][] = $zone['zone'];
+				if ($zone['zone'] != 0) {
+					$options[$cflk_key][] = stripslashes($zone['zone']);
+				}
 			}
 		}
 		
@@ -770,7 +772,7 @@ if (function_exists('cflk_edit')) {
 	}
 	add_filter('cflk_get_links','cfox_links_filter',10,3);
 
-	if (!is_admin()) {
+	if (!is_admin() && !class_exists('phpQuery')) {
 		include_once(CFOX_DIR.'includes/phpQuery-onefile.php');
 	}
 
