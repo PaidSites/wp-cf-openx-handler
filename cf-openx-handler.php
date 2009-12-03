@@ -770,7 +770,7 @@ if (function_exists('cflk_edit')) {
 		$html = cfox_insert_content($html, $ads);
 		return $html;
 	}
-	add_filter('cflk_get_links','cfox_links_filter',10,3);
+	add_filter('cflk_get_links','cfox_links_filter',99999,3);
 
 	if (!is_admin() && !class_exists('phpQuery')) {
 		include_once(CFOX_DIR.'includes/phpQuery-onefile.php');
