@@ -767,7 +767,12 @@ if (function_exists('cflk_edit')) {
 			$count++;
 		}
 		
-		$html = cfox_insert_content($html, $ads);
+		$other_options = array(
+			'parent_before' => $args['before'],
+			'parent_after' => $args['after']
+		);
+		
+		$html = cfox_insert_content($html, $ads, $other_options);
 		return $html;
 	}
 	add_filter('cflk_get_links','cfox_links_filter',99999,3);
@@ -784,7 +789,9 @@ if (function_exists('cflk_edit')) {
 			'find_node' => 'li',
 			'before' => '<li>',
 			'after' => '</li>',
-			'add_class' => ''
+			'add_class' => '',
+			'parent_before' => '',
+			'parent_after' => ''
 		);
 
 		$options = wp_parse_args($options, $defaults);
@@ -793,9 +800,18 @@ if (function_exists('cflk_edit')) {
 		if (function_exists('cf_sort_by_key')) { /* function from cf-compat */
 			$inserts = cf_sort_by_key($inserts,'position');
 		}
-
+		
+		// We need this so we can search for children items and insert accordingly
+		if (empty($parent_before)) {
+			$html = '<'.$parent_node.'>'.$html.'</'.$parent_node.'>';
+		}
+		
 		$h = phpQuery::newDocumentHTML($html);
-		$h[$parent_node]->addClass('cf-has-inserted-items');
+		
+		if (!empty($parent_before)) {
+			$h[$parent_node]->addClass('cf-has-inserted-items');
+		}
+		
 		foreach($inserts as $insert) {
 			if (empty($insert['callback'])) { continue; }
 			if (empty($insert['params'])) { $insert['params'] = array(); }
@@ -814,7 +830,11 @@ if (function_exists('cflk_edit')) {
 				pq($html)->addClass('cf-inserted-item'.$empty_class.$add_class.$insert['add_class'])->appendTo($h[$parent_node]);
 			}
 		}
-
+		
+		// Return just the children items if we did the auto insert of the parent before
+		if (empty($parent_before)) {
+			return $h[$parent_node.' '.$find_node];
+		}
 		return $h;
 	}		
 }
