@@ -448,7 +448,9 @@ function cfox_get_js_code($cfox_zoneID = 0) {
 			   document.write (\"?zoneid=". $cfox_zoneID ."\");
 			   document.write ('&amp;cb=' + m3_r);
 	";
-	$return .= $contexts;
+	if (!empty($contexts)) {
+		$return .= 'document.write("'.$contexts.'")';
+	}	
 	$return .= "
 			   if (document.MAX_used != ',') document.write (\"&amp;exclude=\" + document.MAX_used);
 			   document.write (\"&amp;loc=\" + escape(window.location));
