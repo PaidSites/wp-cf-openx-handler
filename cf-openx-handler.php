@@ -405,29 +405,9 @@ add_action( 'widgets_init', create_function( '', "register_widget('cfox_preload_
 /*************************************************/
 
 function cfox_get_js_code($cfox_zoneID = 0) {
-	$contexts = '';
-	if (function_exists('cfcn_get_context')) {
-		$cf_context = cfcn_get_context();
-
-		if (is_array($cf_context) && !empty($cf_context)) { 
-			foreach ($cf_context as $key => $value) {
-				if (is_array($value) && !empty($value)) {
-					$contexts .= '&'.urlencode($key).'=';
-					$i = 1;
-					foreach ($value as $key2 => $item) {
-						$contexts .= urlencode($item);
-						if ($i < count($value)) {
-							$contexts .= ',';
-						}
-						$i++;
-					}
-				}
-				else {
-					$contexts .= '&'.urlencode($key).'='.urlencode($value);
-				}
-			}
-		}
-	}
+	
+	// Give other plugins the ability to insert extra parameters into the OpenX Invocation
+	$params = apply_filters('cfox_params', '');
 	
 	$cfox_options = get_option('cfox_options');
 	
@@ -448,9 +428,9 @@ function cfox_get_js_code($cfox_zoneID = 0) {
 			   document.write (\"?zoneid=". $cfox_zoneID ."\");
 			   document.write ('&amp;cb=' + m3_r);
 	";
-	if (!empty($contexts)) {
-		$return .= 'document.write("'.$contexts.'")';
-	}	
+	if (!empty($params)) {
+		$return .= 'document.write("'.$params.'")';
+	}
 	$return .= "
 			   if (document.MAX_used != ',') document.write (\"&amp;exclude=\" + document.MAX_used);
 			   document.write (\"&amp;loc=\" + escape(window.location));
@@ -507,29 +487,8 @@ function cfox_get_template($cfox_zoneID = 0,$before = '',$after = '', $preload =
 function cfox_get_zone_content($cfox_zoneID) {
 	if (empty($cfox_zoneID)) { return ''; }
 	
-	$contexts = '';
-	if (function_exists('cfcn_get_context')) {
-		$cf_context = cfcn_get_context();
-
-		if (is_array($cf_context) && !empty($cf_context)) { 
-			foreach ($cf_context as $key => $value) {
-				if (is_array($value) && !empty($value)) {
-					$contexts .= '&'.urlencode($key).'=';
-					$i = 1;
-					foreach ($value as $key2 => $item) {
-						$contexts .= urlencode($item);
-						if ($i < count($value)) {
-							$contexts .= ',';
-						}
-						$i++;
-					}
-				}
-				else {
-					$contexts .= '&'.urlencode($key).'='.urlencode($value);
-				}
-			}
-		}
-	}
+	// Give other plugins the ability to insert extra parameters into the OpenX Invocation
+	$params = apply_filters('cfox_params', '');
 
 	$cfox_options = get_option('cfox_options');
 	
@@ -537,7 +496,7 @@ function cfox_get_zone_content($cfox_zoneID) {
 		return false;
 	}
 	$random = md5(rand(0, 999999999));
-	$url = 'http://'.$cfox_options['server'].'/ajs.php?zoneid='.$cfox_zoneID.'&cb='.$random.$contexts;
+	$url = 'http://'.$cfox_options['server'].'/ajs.php?zoneid='.$cfox_zoneID.'&cb='.$random.$params;
 	$remote = wp_remote_get($url);
 	
 	if (!is_array($remote) || is_a($remote, 'WP_Error')) {
