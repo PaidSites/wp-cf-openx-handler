@@ -78,7 +78,7 @@ function cfox_options_handler($cfox_submit) {
 				$zoneid = $zoneinfo['zoneID'];
 			}
 			if(!empty($zoneid)) {
-				$zones[$key] = array('id' => $zoneid, 'desc' => $zoneinfo['zoneDesc']);
+				$zones[] = array('id' => $zoneid, 'desc' => $zoneinfo['zoneDesc']);
 			}
 		}
 	}
