@@ -3,7 +3,7 @@
 Plugin Name: CF OpenX Handler
 Plugin URI: http://crowdfavorite.com
 Description: Plugin for getting OpenX ads in many areas using specific criteria
-Version: 1.2
+Version: 1.3
 Author: Crowd Favorite
 Author URI: http://crowdfavorite.com
 */

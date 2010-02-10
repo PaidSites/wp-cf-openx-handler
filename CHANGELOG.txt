@@ -1,0 +1,5 @@
+# CF OpenX Handler Changelog
+
+## 1.3
+
+- Removed the responsibility of the plugin to build the parameters.  Now able to filter in parameters via `cfox_params` filter
