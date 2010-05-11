@@ -3,7 +3,7 @@
 Plugin Name: CF OpenX Handler
 Plugin URI: http://crowdfavorite.com
 Description: Plugin for getting OpenX ads in many areas using specific criteria
-Version: 1.3
+Version: 1.3.1
 Author: Crowd Favorite
 Author URI: http://crowdfavorite.com
 */
@@ -335,6 +335,9 @@ class cfox_widget extends WP_Widget {
 				?>
 			</select>
 		</p>
+		<p>
+			<a href="<?php echo admin_url('options-general.php?page=cf-openx-handler'); ?>"><?php _e('Edit OpenX Ads','cfsp') ?></a>
+		</p>
 		<?php
 	}
 }
@@ -394,6 +397,9 @@ class cfox_preload_widget extends WP_Widget {
 				}
 				?>
 			</select>
+		</p>
+		<p>
+			<a href="<?php echo admin_url('options-general.php?page=cf-openx-handler'); ?>"><?php _e('Edit OpenX Ads','cfsp') ?></a>
 		</p>
 		<?php
 	}
