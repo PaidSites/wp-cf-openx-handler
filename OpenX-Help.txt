@@ -1,0 +1,59 @@
+## OpenX Userguides
+
+- The OpenX system will be organized using the built in Website and Zone system.  This system gives the users the ability to restrict an ad based on a zone within a website.  So if the user wants to display an ad only on one website they can add that ad only to the website that is to display it.  Using the same logic, if the user has an ad they want displayed on all websites, they can add the ad to all websites in the proper sized zones.  This will make organization extremely easy to understand, and give the user the easy ability to see what websites a certain ad has been added to.
+
+### OpenX Documentation Home
+
+- http://www.openx.org/docs/2.8/userguide/
+
+### Website Organization
+
+- All websites will need to have a corresponding website entry in the OpenX admin
+- Create a website through the "Inventory - Websites & Zones" section using the OpenX documentation for reference
+	1. http://www.openx.org/en/docs/2.8/userguide/Adding+a+website
+
+### Zone Organization
+
+- Zones are defined spaces on your website used for displaying creatives. A zone can be a single space on a specific page, or a space which is used on multiple pages, but shows the same collection of creatives.
+- A Zone will need to be created for each ad area to be used on each Website
+- A Zone can be created using the OpenX documentation for reference
+	1. http://www.openx.org/en/docs/2.8/userguide/Adding+a+zone
+
+### Advertisers Organization
+
+- Advertisers will need to be created for each source of ads
+- Each Publication code will need to be set up as an Advertiser
+- Advertisers can be created using the OpenX documentation for reference
+	1. http://www.openx.org/en/docs/2.8/userguide/Adding+an+advertiser
+- After the Advertiser has been created, a default Campaign will need to be created
+- Banners (ads) will need to be added to the Campaigns
+
+### Campaign Organization
+
+- Campaigns will need to be created for each Advertiser
+- One of these three Campaigns will need to be created for each Advertiser for the system to function properly
+
+### Banner (ad) Organization
+
+- Banners will need to be created for each ad that will be served
+- Banners can be added using the OpenX documentation for reference
+	1. http://www.openx.org/en/docs/2.8/userguide/Adding+a+banner
+- Banners will need to have conditionals applied to them to output properly
+	1.  To add restrictions navigate to the Banner to be restricted
+	2.  Click on the Delivery Options tab
+	3.  Select "Site - Variable" from the "Add new limitation" drop down, then click "Add"
+		- A Banner can have multiple Site Variables to be displayed more often
+		- To add multiple Site Variables use the method described in this section, and select "Or" from the drop down on the left side of the limitations section
+	4.  In the "Name" field add the publication code
+	5.  In the "Value" field add the banner type
+		- See Types and their definitions below in the Pub Code Status Messages section
+	6.  Click the "Save Changes" button at the bottom of the page to save changes
+- These ads will also need a weight put on them so they display over Standard Ads
+	1.  To add a weight, click on the "Banner Properties" tab of the Banner
+	2.  In the "Weight" section, add 100 for a Normal Publication Specific Ad
+		- To have a Banner show up more often than other Banners make this number higher
+		
+
+### OpenX Content Delegation Functionality
+
+- This functionality will help us influence OpenX in what ads should be served by generating a list of keywords that OpenX can use to apply as a filter in what advertisements to choose. The functionality will take in to account the user's current subscriptions, the page context (tags and categories) as well as provide the ability for each site to add tags of its own.
