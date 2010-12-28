@@ -28,7 +28,7 @@ The `CF OpenX Ad` widget loads the OpenX Zone in the standard OpenX fashion.  Th
 
 The `CF OpenX Preload Ad` widget loads the OpenX Zone before the pages loads.  This widget will grab the OpenX Zone information before the page loads. See the `Preload` section under the `Preload vs. Postload Ads` section for more info on how this works.
 
-If the WP Super Cache plugin has been added, and is in `Legacy Mode` for caching pages, an option will be added to the widget to block it from being cached.  This allows the OpenX Ad code to be loaded each time the page is loaded to allow for OpenX to serve the ad each time, which lets OpenX determine ads based on Cookies and other site data.
+If the WP Super Cache plugin has been added, and is in `Legacy Mode` for caching pages and `Late Init` has been enabled, an option will be added to the widget to block it from being cached.  This allows the OpenX Ad code to be loaded each time the page is loaded to allow for OpenX to serve the ad each time, which lets OpenX determine ads based on Cookies and other site data.
 
 ### Shortcode
 

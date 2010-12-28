@@ -132,7 +132,7 @@ function cfox_options_page() {
 							<?php _e('Server URL:', 'cfox'); ?>
 						</td>
 						<td>
-							<input type="text" name="cfox_options[server]" id="cfox_server" size="50" value="<?php echo attribute_escape($cfox_options['server']); ?>" />
+							<input type="text" name="cfox_options[server]" id="cfox_server" size="50" value="<?php echo esc_attr($cfox_options['server']); ?>" />
 							<br />
 							<?php _e('Omit http:// and https://', 'cfox'); ?>
 						</td>
@@ -154,18 +154,18 @@ function cfox_options_page() {
 				if (is_array($cfox_options['zones']) && !empty($cfox_options['zones'])) {
 					foreach ($cfox_options['zones'] as $key => $zoneinfo) {
 						?>
-						<div id="cfox_zone_<?php echo attribute_escape($key); ?>">
+						<div id="cfox_zone_<?php echo esc_attr($key); ?>">
 							<table class="widefat">
 								<tbody>
 									<tr>
 										<td width="320">
-											<input type="text" name="cfox_options[zones][<?php echo attribute_escape($key); ?>][zoneID]" id="cfox_zone_<?php echo attribute_escape($key); ?>_zoneID" size="10" value="<?php echo attribute_escape($zoneinfo['id']); ?>" />
+											<input type="text" name="cfox_options[zones][<?php echo esc_attr($key); ?>][zoneID]" id="cfox_zone_<?php echo esc_attr($key); ?>_zoneID" size="10" value="<?php echo esc_attr($zoneinfo['id']); ?>" />
 										</td>
 										<td>
-											<input type="text" name="cfox_options[zones][<?php echo attribute_escape($key); ?>][zoneDesc]" id="cfox_zone_<?php echo attribute_escape($key); ?>_zoneDesc" size="50" value="<?php echo attribute_escape($zoneinfo['desc']); ?>" />
+											<input type="text" name="cfox_options[zones][<?php echo esc_attr($key); ?>][zoneDesc]" id="cfox_zone_<?php echo esc_attr($key); ?>_zoneDesc" size="50" value="<?php echo esc_attr($zoneinfo['desc']); ?>" />
 										</td>
 										<td width="60px" style="text-align: center;">
-											<input type="button" class="cfox-button-delete button" id="cfox_delete_<?php echo attribute_escape($key); ?>" value="<?php _e('Delete', 'cfox'); ?>" />
+											<input type="button" class="cfox-button-delete button" id="cfox_delete_<?php echo esc_attr($key); ?>" value="<?php _e('Delete', 'cfox'); ?>" />
 										</td>
 									</tr>
 								</tbody>
@@ -284,59 +284,28 @@ class cfox_widget extends WP_Widget {
 
 	function widget($args, $instance) {
 		extract($args, EXTR_SKIP);
-		global $cache_enabled,$super_cache_enabled;
 		
 		$title = esc_attr($instance['title']);
 		$zone = $instance['zone'];
-		$cache = intval($instance['cache']);
 		
 		echo $before_widget;
 		if (!empty($title)) {
 			echo $before_title.$title.$after_title;
 		}
-		
-		if ($cache && defined('WP_CACHE') && WP_CACHE && $cache_enabled && !$super_cache_enabled) { 
-			?>
-			<div class="cfox_widget">
-				<!--mfunc cfox_js_code(<?php echo $zone; ?>) -->
-					<?php cfox_js_code($zone); ?>
-				<!--/mfunc-->
-			</div>
-			<?php
-		}
-		else {
-			?>
-			<div class="cfox_widget">
-				<?php cfox_js_code($zone); ?>
-			</div>
-			<?php
-		}
-
+		echo '<div class="cfox_widget">'.cfox_get_js_code($zone).'</div>';
 		echo $after_widget;
 	}
 
 	function update($new_instance, $old_instance) {
-		global $cache_enabled,$super_cache_enabled;
-
 		$instance = $old_instance;
 
 		$instance['title'] = strip_tags($new_instance['title']);
 		$instance['zone'] = strip_tags($new_instance['zone']);
-		
-		if (!defined('WP_CACHE') || !WP_CACHE || !$cache_enabled || $super_cache_enabled) {
-			$instance['cache'] = 0;
-		}
-		else {
-			$instance['cache'] = intval($new_instance['cache']);
-		}
-
 		return $instance;
 	}
 
 	function form($instance) {
-		global $cache_enabled,$super_cache_enabled;
-		
-		$instance = wp_parse_args((array) $instance, array('title' => '', 'zone' => '', 'cache' => 1));
+		$instance = wp_parse_args((array) $instance, array('title' => '', 'zone' => ''));
 		$title = esc_attr($instance['title']);
 		$cfox_options = maybe_unserialize(get_option('cfox_options'));
 		
@@ -358,20 +327,16 @@ class cfox_widget extends WP_Widget {
 				<select id="<?php echo $this->get_field_id('zone'); ?>" name="<?php echo $this->get_field_name('zone'); ?>" class="widefat">
 					<option value="0"<?php selected($instance['zone'], '0'); ?>><?php _e('Select Zone ID:', 'cfox'); ?></option>
 					<?php foreach ($cfox_options['zones'] as $key => $zoneinfo) { ?>
-						<option value="<?php echo attribute_escape($zoneinfo['id']); ?>"<?php selected($instance['zone'], attribute_escape($zoneinfo['id'])); ?>><?php echo attribute_escape($zoneinfo['id'] . ' - '.$zoneinfo['desc']); ?></option>
+						<option value="<?php echo esc_attr($zoneinfo['id']); ?>"<?php selected($instance['zone'], esc_attr($zoneinfo['id'])); ?>><?php echo esc_attr($zoneinfo['id'] . ' - '.$zoneinfo['desc']); ?></option>
 					<?php } ?>
 				</select>
 			</p>
-			<?php if (defined('WP_CACHE') && WP_CACHE && $cache_enabled && !$super_cache_enabled) { ?> 
-				<p>
-					<label for="<?php echo $this->get_field_id('cache'); ?>"><?php _e('Block WP Super Cache:', 'cfox'); ?></label>
-					<select id="<?php echo $this->get_field_id('cache'); ?>" name="<?php echo $this->get_field_name('cache'); ?>" class="widefat">
-						<option value="0"<?php selected($instance['cache'], '0'); ?>><?php _e('No'); ?></option>
-						<option value="1"<?php selected($instance['cache'], '1'); ?>><?php _e('Yes'); ?></option>
-					</select>
-				</p>
-			<?php } ?>
 			<?php
+			if (defined('WP_CACHE') && WP_CACHE) {
+				?>
+				<p><small><?php _e('NOTE: The Ads being displayed will never be cached by WP Super Cache. These will always be dynamic.', 'cfox'); ?></small></p>
+				<?php
+			}
 		}
 		?>
 		<p>
@@ -390,7 +355,7 @@ class cfox_preload_widget extends WP_Widget {
 
 	function widget($args, $instance) {
 		extract($args, EXTR_SKIP);
-		global $cache_enabled, $super_cache_enabled;
+		global $cache_enabled, $super_cache_enabled, $wp_super_cache_late_init;
 		
 		$title = esc_attr($instance['title']);
 		$zone = $instance['zone'];
@@ -401,7 +366,7 @@ class cfox_preload_widget extends WP_Widget {
 			echo $before_title.$title.$after_title;
 		}
 		
-		if ($cache && defined('WP_CACHE') && WP_CACHE && $cache_enabled && !$super_cache_enabled) { 
+		if ($cache && defined('WP_CACHE') && WP_CACHE && $cache_enabled && !$super_cache_enabled && $wp_super_cache_late_init) { 
 			?>
 			<div class="cfox_preload_widget">
 				<!--mfunc cfox_zone_content(<?php echo $zone; ?>) -->
@@ -421,7 +386,7 @@ class cfox_preload_widget extends WP_Widget {
 	}
 
 	function update($new_instance, $old_instance) {
-		global $cache_enabled,$super_cache_enabled;
+		global $cache_enabled,$super_cache_enabled, $wp_super_cache_late_init;
 		
 		$instance = $old_instance;
 
@@ -439,7 +404,7 @@ class cfox_preload_widget extends WP_Widget {
 	}
 
 	function form($instance) {
-		global $cache_enabled,$super_cache_enabled;
+		global $cache_enabled,$super_cache_enabled, $wp_super_cache_late_init;
 		
 		$instance = wp_parse_args((array) $instance, array('title' => '', 'zone' => '', 'cache' => 1));
 		$title = esc_attr($instance['title']);
@@ -463,20 +428,32 @@ class cfox_preload_widget extends WP_Widget {
 				<select id="<?php echo $this->get_field_id('zone'); ?>" name="<?php echo $this->get_field_name('zone'); ?>" class="widefat">
 					<option value="0"<?php selected($instance['zone'], '0'); ?>><?php _e('Select Zone ID:', 'cfox'); ?></option>
 					<?php foreach ($cfox_options['zones'] as $key => $zoneinfo) { ?>
-						<option value="<?php echo attribute_escape($zoneinfo['id']); ?>"<?php selected($instance['zone'], attribute_escape($zoneinfo['id'])); ?>><?php echo attribute_escape($zoneinfo['id'] . ' - '.$zoneinfo['desc']); ?></option>
+						<option value="<?php echo esc_attr($zoneinfo['id']); ?>"<?php selected($instance['zone'], esc_attr($zoneinfo['id'])); ?>><?php echo esc_attr($zoneinfo['id'] . ' - '.$zoneinfo['desc']); ?></option>
 					<?php } ?>
 				</select>
 			</p>
-			<?php if (defined('WP_CACHE') && WP_CACHE && $cache_enabled && !$super_cache_enabled) { ?> 
+			<?php if (defined('WP_CACHE') && WP_CACHE && $cache_enabled && !$super_cache_enabled && $wp_super_cache_late_init) { ?> 
 				<p>
-					<label for="<?php echo $this->get_field_id('cache'); ?>"><?php _e('Block WP Super Cache:', 'cfox'); ?></label>
+					<label for="<?php echo $this->get_field_id('cache'); ?>"><?php _e('Dynamically Load Ad:', 'cfox'); ?></label>
 					<select id="<?php echo $this->get_field_id('cache'); ?>" name="<?php echo $this->get_field_name('cache'); ?>" class="widefat">
 						<option value="0"<?php selected($instance['cache'], '0'); ?>><?php _e('No'); ?></option>
 						<option value="1"<?php selected($instance['cache'], '1'); ?>><?php _e('Yes'); ?></option>
 					</select>
+					<br />
+					<small><?php _e('This will bypass WP Super Cache.', 'cfox'); ?></small>
 				</p>
-			<?php } ?>
-			<?php
+			<?php } else if (defined('WP_CACHE') && WP_CACHE) {
+				if ($super_cache_enabled) {
+					?>
+					<p><small><?php _e('These ads will be cached using WP Super Cache. To remove caching for this widget, set WP Super Cache to "Legacy Page Cache".', 'cfox'); ?></small></p>
+					<?php
+				}
+				else if (!$wp_super_cache_late_init) {
+					?>
+					<p><small><?php _e('These ads will be cached using WP Super Cache. To remove caching for this widget, enable "Late Init" for WP Super Cache.', 'cfox'); ?></small></p>
+					<?php
+				}
+			}
 		}
 		?>
 		<p>
@@ -703,7 +680,7 @@ if (function_exists('cflk_edit')) {
 				</table>
 				<p class="submit" style="border-top: none;">
 					<input type="hidden" name="cf_action" value="cfox_links_settings_update" />
-					<input type="hidden" name="cflk_key" value="'.attribute_escape($cflk_key).'" />
+					<input type="hidden" name="cflk_key" value="'.esc_attr($cflk_key).'" />
 					<input type="submit" name="submit" id="cfox-submit" value="'.__('Update Zone Settings', 'cfox').'" class="button-primary" />
 				</p>
 			</form>
