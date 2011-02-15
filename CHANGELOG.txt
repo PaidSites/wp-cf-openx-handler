@@ -1,5 +1,9 @@
 # CF OpenX Handler Changelog
 
+## 1.4.1
+
+- Added the htmloutput variable to the URL for getting the zone content
+
 ## 1.4
 
 - Cleanup of code to update with current coding standards

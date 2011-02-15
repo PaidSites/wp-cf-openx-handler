@@ -59,6 +59,10 @@ To add zone content via template tag using the `Postload` functionality (replace
 
 The CF OpenX plugin allows for two different ways of loading ads, Preload and Postload.
 
+NOTE:  The Preload of ads has been modified slightly due to issues with the document.write that is returned with Preloaded content.  A GET variable has been added to the URL that is sent to OpenX that notifies OpenX that we want HTML content back from the system instead of JS code with a document.write at the end.  This variable is `htmloutput` with a value of `true`.  
+
+For this code to work, a hack is required in the ajs.php on line 4280.  An `if` statement is needed around the `MAX_javascriptToHTML` function call to echo the `$output['html']` if the GET variable is present with the proper value.  This bypasses the processing of the HTML into Javascript.
+
 #### Preload
 
 The benefit of the Preload Ad is that it will have the Zone data before the page loads.  One of the drawbacks of this functionality is that it will slow down page loads for users with slower connections as it stops the page load to get the data from OpenX, and will only proceed with the page load after it gets the information.

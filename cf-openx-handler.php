@@ -3,7 +3,7 @@
 Plugin Name: CF OpenX Handler
 Plugin URI: http://crowdfavorite.com
 Description: Plugin for getting OpenX ads in many areas using specific criteria
-Version: 1.4
+Version: 1.4.1
 Author: Crowd Favorite
 Author URI: http://crowdfavorite.com
 */
@@ -561,6 +561,13 @@ function cfox_get_zone_content($cfox_zoneID = '') {
 		return false;
 	}
 	$random = md5(rand(0, 999999999));
+	// Add the htmloutput variable so we can get Raw HTML from OpenX if that is available
+	if (empty($params) || $params == '') {
+		$params .= 'htmloutput=true';
+	}
+	else {
+		$params .= '&htmloutput=true';
+	}
 	$url = 'http://'.$cfox_options['server'].'/ajs.php?zoneid='.$cfox_zoneID.'&cb='.$random.$params;
 	$remote = wp_remote_get($url);
 	
@@ -568,13 +575,16 @@ function cfox_get_zone_content($cfox_zoneID = '') {
 		return false;
 	}
 	
-	$content = $remote['body'];
-	
-	if (strpos($content, '+=') === false) {
-		return false;
+	if (strpos($remote['body'], '+=') !== false) {
+		// Check to see if we received JS code from OpenX.  If so, wrap it in script tags and return
+		return '<script type="text/javascript">'.$remote['body'].'</script>';
 	}
-	
-	return '<script type="text/javascript">'.$content.'</script>';
+	else if (!empty($remote['body']) && $remote['body'] != '') {
+		// If we just received content, return that.
+		return $remote['body'];
+	}
+	// If nothing was received, return false
+	return false;
 }
 
 function cfox_zone_content($cfox_zoneID = '') {
