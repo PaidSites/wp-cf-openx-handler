@@ -3,6 +3,7 @@
 ## 1.4.3
 
 - Moving the zone override to a proper place so checks can be made on it
+- Adding the CF OpenX Override plugin to provide an admin interface to override a Zone ID.
 
 ## 1.4.2
 
