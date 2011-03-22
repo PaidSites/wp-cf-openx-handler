@@ -1,5 +1,9 @@
 # CF OpenX Handler Changelog
 
+## 1.4.2
+
+- Added the ability to override the zone ID when displaying a zone
+
 ## 1.4.1
 
 - Added the htmloutput variable to the URL for getting the zone content

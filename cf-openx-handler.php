@@ -3,7 +3,7 @@
 Plugin Name: CF OpenX Handler
 Plugin URI: http://crowdfavorite.com
 Description: Plugin for getting OpenX ads in many areas using specific criteria
-Version: 1.4.1
+Version: 1.4.2
 Author: Crowd Favorite
 Author URI: http://crowdfavorite.com
 */
@@ -14,7 +14,7 @@ Author URI: http://crowdfavorite.com
 load_plugin_textdomain('cfox');
 
 // Constants
-define('CFOX_VERSION', '1.4');
+define('CFOX_VERSION', '1.4.2');
 define('CFOX_DIR',trailingslashit(realpath(dirname(__FILE__))));
 
 
@@ -472,6 +472,9 @@ function cfox_get_js_code($cfox_zoneID = 0) {
 	// No need to proceed unless we have a valid zone id
 	if($cfox_zoneID == 0 || $cfox_zoneID == '') { return false; }
 	
+	// Provide the ability to override the zone
+	$cfox_zoneID = apply_filters('cfox-display-zone-id', $cfox_zoneID);
+	
 	// Give other plugins the ability to insert extra parameters into the OpenX Invocation
 	$params = apply_filters('cfox_params', '');
 	
@@ -551,6 +554,9 @@ function cfox_template($cfox_zoneID = 0, $before = '', $after = '', $preload = f
 function cfox_get_zone_content($cfox_zoneID = '') {
 	// No need to proceed unless we have a valid zone id
 	if($cfox_zoneID == 0 || $cfox_zoneID == '') { return false; }
+
+	// Provide the ability to override the zone
+	$cfox_zoneID = apply_filters('cfox-display-zone-id', $cfox_zoneID);
 
 	// Give other plugins the ability to insert extra parameters into the OpenX Invocation
 	$params = apply_filters('cfox_params', '');
