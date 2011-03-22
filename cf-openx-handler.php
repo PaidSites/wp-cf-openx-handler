@@ -581,7 +581,7 @@ function cfox_get_zone_content($cfox_zoneID = '') {
 		return false;
 	}
 	
-	if (strpos($remote['body'], '+=') !== false) {
+	if (strpos($remote['body'], '+=') !== false || strpos($remote['body'], 'document.write(') !== false) {
 		// Check to see if we received JS code from OpenX.  If so, wrap it in script tags and return
 		return '<script type="text/javascript">'.$remote['body'].'</script>';
 	}
