@@ -254,7 +254,7 @@ function cfoxo_item_settings($id = '0', $options = array()) {
 					<span class="cfoxo-item-settings-text"><?php _e('Hour: ', 'cfoxo'); ?></span>
 					<select name="cfoxo[<?php echo $id; ?>][start][hour]">
 						<?php 
-						for ($i = 0; $i <= 12; $i++) {
+						for ($i = 0; $i <= 23; $i++) {
 							echo '<option value="'.zeroise($i, 2).'"'.selected(zeroise($i, 2), $start_hour, false).'>'.$i.'</option>';
 						}
 						?>
@@ -264,7 +264,7 @@ function cfoxo_item_settings($id = '0', $options = array()) {
 					<span class="cfoxo-item-settings-text"><?php _e('Minute: ', 'cfoxo'); ?></span>
 					<select name="cfoxo[<?php echo $id; ?>][start][minute]">
 						<?php 
-						for ($i = 0; $i <= 60; $i++) {
+						for ($i = 0; $i <= 59; $i++) {
 							echo '<option value="'.zeroise($i, 2).'"'.selected(zeroise($i, 2), $start_minute, false).'>'.$i.'</option>';
 						}
 						?>
@@ -274,7 +274,7 @@ function cfoxo_item_settings($id = '0', $options = array()) {
 					<span class="cfoxo-item-settings-text"><?php _e('Second: ', 'cfoxo'); ?></span>
 					<select name="cfoxo[<?php echo $id; ?>][start][second]">
 						<?php 
-						for ($i = 0; $i <= 60; $i++) {
+						for ($i = 0; $i <= 59; $i++) {
 							echo '<option value="'.zeroise($i, 2).'"'.selected(zeroise($i, 2), $start_second, false).'>'.$i.'</option>';
 						}
 						?>
@@ -320,7 +320,7 @@ function cfoxo_item_settings($id = '0', $options = array()) {
 					<span class="cfoxo-item-settings-text"><?php _e('Hour: ', 'cfoxo'); ?></span>
 					<select name="cfoxo[<?php echo $id; ?>][end][hour]">
 						<?php 
-						for ($i = 0; $i <= 12; $i++) {
+						for ($i = 0; $i <= 23; $i++) {
 							echo '<option value="'.zeroise($i, 2).'"'.selected(zeroise($i, 2), $end_hour, false).'>'.$i.'</option>';
 						}
 						?>
@@ -330,7 +330,7 @@ function cfoxo_item_settings($id = '0', $options = array()) {
 					<span class="cfoxo-item-settings-text"><?php _e('Minute: ', 'cfoxo'); ?></span>
 					<select name="cfoxo[<?php echo $id; ?>][end][minute]">
 						<?php 
-						for ($i = 0; $i <= 60; $i++) {
+						for ($i = 0; $i <= 59; $i++) {
 							echo '<option value="'.zeroise($i, 2).'"'.selected(zeroise($i, 2), $end_minute, false).'>'.$i.'</option>';
 						}
 						?>
@@ -340,7 +340,7 @@ function cfoxo_item_settings($id = '0', $options = array()) {
 					<span class="cfoxo-item-settings-text"><?php _e('Second: ', 'cfoxo'); ?></span>
 					<select name="cfoxo[<?php echo $id; ?>][end][second]">
 						<?php 
-						for ($i = 0; $i <= 60; $i++) {
+						for ($i = 0; $i <= 59; $i++) {
 							echo '<option value="'.zeroise($i, 2).'"'.selected(zeroise($i, 2), $end_second, false).'>'.$i.'</option>';
 						}
 						?>
@@ -501,7 +501,44 @@ function cfoxo_js() {
  */
 function cfoxo_zone_override($zoneID = 0) {
 	if ($zoneID <= 0) { return $zoneID; }
-	
+	$options = get_option('cfoxo_options');
+	if (is_array($options) && !empty($options)) {
+		foreach ($options as $key => $option) {
+			if (empty($option['zone']) || $option['zone'] <= 0 || intval($option['zone']) != $zoneID) { continue; }
+			
+			// Break the Start time into pieces so we can process it
+			$start_time = 		explode(' ', $option['start_time']);
+			$start_time_time = 	explode(':', $start_time[0]);
+			$start_time_day = 	explode('-', $start_time[1]);
+
+			$start_hour = 		$start_time_time[0];
+			$start_minute = 	$start_time_time[1];
+			$start_second = 	$start_time_time[2];
+			$start_month = 		$start_time_day[0];
+			$start_day = 		$start_time_day[1];
+			$start_year = 		$start_time_day[2];
+
+			// Break the End time into pieces so we can process it
+			$end_time = 		explode(' ', $option['end_time']);
+			$end_time_time = 	explode(':', $end_time[0]);
+			$end_time_day = 	explode('-', $end_time[1]);
+
+			$end_hour = 		$end_time_time[0];
+			$end_minute = 		$end_time_time[1];
+			$end_second = 		$end_time_time[2];
+			$end_month = 		$end_time_day[0];
+			$end_day = 			$end_time_day[1];
+			$end_year = 		$end_time_day[2];
+			
+			$start = mktime($start_hour, $start_minute, $start_second, $start_month, $start_day, $start_year);
+			$end = mktime($end_hour, $end_minute, $end_second, $end_month, $end_day, $end_year);
+			$time = time();
+			
+			if ($time >= $start && $time <= $end) {
+				$zoneID = $option['override'];
+			}
+		}
+	}
 	return $zoneID;
 }
 add_filter('cfox-display-zone-id', 'cfoxo_zone_override');
