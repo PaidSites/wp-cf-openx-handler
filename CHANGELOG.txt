@@ -1,5 +1,9 @@
 # CF OpenX Handler Changelog
 
+## 1.4.4
+
+- Fixing the htmloutput variable that is added on preloaded ads
+
 ## 1.4.3
 
 - Moving the zone override to a proper place so checks can be made on it
