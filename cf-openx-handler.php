@@ -576,14 +576,21 @@ function cfox_get_zone_content($cfox_zoneID = '') {
 		return false;
 	}
 	
-	if (strpos($remote['body'], '+=') !== false || strpos($remote['body'], 'document.write(') !== false) {
+	$body = apply_filters(
+		'cfox_remote_body',
+		empty($remote['body']) ? null : $remote['body'],
+		$remote
+	);
+	
+	if (strpos($body, '+=') !== false || strpos($body, 'document.write(') !== false) {
 		// Check to see if we received JS code from OpenX.  If so, wrap it in script tags and return
-		return '<script type="text/javascript">'.$remote['body'].'</script>';
+		return '<script type="text/javascript">'.$body.'</script>';
 	}
-	else if (!empty($remote['body']) && $remote['body'] != '') {
+	else if (!empty($body) && $body != '') {
 		// If we just received content, return that.
-		return $remote['body'];
+		return $body;
 	}
+	
 	// If nothing was received, return false
 	return false;
 }
