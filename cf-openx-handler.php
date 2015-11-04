@@ -279,7 +279,7 @@ function cfox_get_zones() {
 class cfox_widget extends WP_Widget {
 	function cfox_widget() {
 		$widget_ops = array('classname' => 'cfox', 'description' => 'Widget for adding OpenX handlers in the Traditional OpenX way using JavaScript');
-		$this->WP_Widget('cfox', 'CF OpenX Ad', $widget_ops);
+		parent::__construct('cfox', 'CF OpenX Ad', $widget_ops);
 	}
 
 	function widget($args, $instance) {
@@ -350,7 +350,7 @@ add_action('widgets_init', create_function('', "register_widget('cfox_widget');"
 class cfox_preload_widget extends WP_Widget {
 	function cfox_preload_widget() {
 		$widget_ops = array('classname' => 'cfox_preload', 'description' => 'Widget for adding OpenX content using the Preload page method');
-		$this->WP_Widget('cfox_preload', 'CF OpenX Preload Ad', $widget_ops);
+		parent::__construct('cfox_preload', 'CF OpenX Preload Ad', $widget_ops);
 	}
 
 	function widget($args, $instance) {
